@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Entities>
+  <Enemy type="s">
+    <Quad>
+      <Size>scale</Size>
+      <Pic>color.Green</Pic>
+    </Quad>
+  </Enemy>
+  <Walls>
+  </Walls>
+  <Player>
+  </Player>
+</Entities>

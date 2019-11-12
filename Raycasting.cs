@@ -4,12 +4,42 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+//using VectorLib;
 
 namespace ROQWE
 {
     class Raycasting
     {
-        
+        public static bool Raycast(Vector source, Vector direction, Entity target)
+        {
+            if (target == null)
+            {
+                return false;
+            }
+
+            Vector TargetHighAngle;
+            Vector TargetLowAngle;
+            Vector SourceAngle = Vector.RadiansToVector(direction.Angle, 1);
+            Vector TopLeft = ((Vector)target.Position.XY - source) * Game.Scale + (new Vector(-Game.Scale, Game.Scale) / 2);
+            Vector TopRight = ((Vector)target.Position.XY - source) * Game.Scale + (new Vector(Game.Scale, Game.Scale) / 2);
+            Vector BottomRight = ((Vector)target.Position.XY - source) * Game.Scale + (new Vector(Game.Scale, -Game.Scale) / 2);
+            Vector BottomLeft = ((Vector)target.Position.XY - source) * Game.Scale + (new Vector(-Game.Scale, -Game.Scale) / 2);
+            double Angle1 = Math.Abs(Vector.CrossProduct(BottomRight - TopLeft, SourceAngle));
+            double Angle2 = Math.Abs(Vector.CrossProduct(TopRight - BottomLeft, SourceAngle));
+            if (Angle1 >= Angle2)
+            {
+                TargetHighAngle = TopRight;
+                TargetLowAngle = BottomLeft;
+            }
+            else
+            {
+                TargetHighAngle = TopLeft;
+                TargetLowAngle = BottomRight;
+            }
+
+
+            return (Vector.IsBetween(SourceAngle, TargetHighAngle, TargetLowAngle));
+        }
         public static Entity Cast(Vector start, Vector direction)
         {
             
@@ -48,7 +78,7 @@ namespace ROQWE
                     //tile.Pic = new Quad(tile.X * Game.Scale, tile.Y * Game.Scale, Game.Scale, Game.Scale, Color.Black,4);
 
                     //Game.DQD.Add(tile);
-                    if (Vector.Raycast(start, Direction, tile))
+                    if (Raycast(start, Direction, tile))
                     {
                         return tile;
                     }

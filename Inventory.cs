@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
+using VectorLib;
 
 namespace ROQWE
 {
@@ -27,7 +28,10 @@ namespace ROQWE
                     return itemArray[x, y];
                 }
             }
-            set { }
+            set 
+            {
+                itemArray[x, y] = value;
+            }
         }
         public Inventory(int width, int height)
         {
@@ -46,51 +50,84 @@ namespace ROQWE
     }
     class Item
     {
-        public enum Stat
-        {
-            Health,
-            Length
-        } 
-
         public int itemType;
-        private Cube imageQuad;
+        public bool equipped;
+
+        private Cube image;
         public Cube Image
         {
             get
             {
-                if (this is null) 
-                { 
+                if (image is null) 
+                {
                     return empty;
                 } else 
                 { 
-                    return imageQuad; 
+                    return image; 
                 }
 
             }
-            set { }
+            set 
+            {
+                image = value;
+            }
         }
-        readonly float[] statuses = new float[(int)Stat.Length];
+        readonly Stats statuses;
 
-        public static readonly Cube empty = new Cube((IntVector3D)(0,0,0),1,1,0);
+        public static readonly Cube empty = new Cube((IntVector3D)(0,0,0),1,1,1,0);
         /// <summary>
         /// creates an item with pic and stats
         /// </summary>
         /// <param name="type"></param>
         /// <param name="pic"></param>
         /// <param name="stats">should be of length Item.Stat.Length</param>
-        public Item(int type, Cube pic, float[] stats)
+        public Item(int type, Cube pic, Stats stats)
         {
             itemType = type;
-            imageQuad = pic;
+
+            image = pic;
             statuses = stats;
         }
         public enum ItemIDs
         {
-            Empty
+            Empty,
+            Helmet,
+            Chestplate,
+            Pants,
+            Boots,
+            Weapon,
+            Accessories,
+            Misc
         }
         public static Item[] itemTypes = new Item[]
         {
-            new Item(0,empty, new float[]{ })
+            new Item((int)ItemIDs.Empty,empty, new Stats(0,0,0))
         };
+    }
+    class Stats 
+    {
+        float health;
+        float damage;
+        float defence;
+        public Stats(float health,float damage, float defence)
+        {
+            this.health = health;
+            this.damage = damage;
+            this.defence = defence;
+        }
+        /// <summary>
+        /// adds values together
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Stats operator +(Stats a, Stats b)
+        {
+            return new Stats(a.health + b.health, a.damage + b.damage, a.defence + b.defence);
+        }
+        public static Stats operator -(Stats a, Stats b)
+        {
+            return new Stats(a.health + b.health, a.damage + b.damage, a.defence + b.defence);
+        }
     }
 }

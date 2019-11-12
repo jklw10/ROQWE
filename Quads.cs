@@ -9,7 +9,7 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing.Text;
-
+//using VectorLib;
 namespace ROQWE
 {
     class Cube
@@ -26,7 +26,7 @@ namespace ROQWE
         public double Angle { get; set; }
         private float Width;
         private float Length;
-        public float Height =1;
+        private float Height =1;
 
         private static int VSID;
         private static int QID;
@@ -40,55 +40,57 @@ namespace ROQWE
 
         private Vector ScreenSize = new Vector(Game.window.Width, Game.window.Height);
         
-        public Vector TopLeft { get { return (Position.Xy + Offset + Vector.RotateVector(new Vector(Width, Length) / 2, Angle - Math.PI / 2 * 4)); } }
-        public Vector TopRight { get { return (Position.Xy + Offset + Vector.RotateVector(new Vector(Width, Length) / 2, Angle - Math.PI / 2 * 1)); } }
-        public Vector BottomRight { get { return (Position.Xy + Offset + Vector.RotateVector(new Vector(Width, Length) / 2, Angle - Math.PI / 2 * 2)); } }
-        public Vector BottomLeft { get { return (Position.Xy + Offset + Vector.RotateVector(new Vector(Width, Length) / 2, Angle - Math.PI / 2 * 3)); } }
-        //*/
         private Color Color = Color.Black;
         private int   Texture = Loader.LoadColor(Color.Blue);
         public float  highlight = 0;
 
-        public Cube(float x, float y, float z, float width, float height, Color color)
-        {
-            X = x;
-            Y = y;
-            Z = z;
-            Width = width;
-            Length = height;
-            Texture = Loader.LoadColor(color);
-            Color = color;
-        }
-        public Cube(Vector3 position, float width, float height, Color color)
-        {
-            X = position.X;
-            Y = position.Y;
-            Z = position.Z;
-            Width = width;
-            Length = height;
-            Texture = Loader.LoadColor(color);
-            Color = color;
-        }
-        public Cube(Vector3 position, float width, float length, int texture)
-        {
-            X = position.X;
-            Y = position.Y;
-            Z = position.Z;
-            Width = width;
-            Length = length;
-            Texture = texture;
-        }
-
-        public Cube(float x, float y, float z, float width, float length, int texture)
+        public Cube(float x, float y, float z, float width, float length, float height, Color color)
         {
             X = x;
             Y = y;
             Z = z;
             Width = width;
             Length = length;
+            Height = height;
+            Texture = Loader.LoadColor(color);
+            Color = color;
+        }
+        public Cube(Vector3 position, float width, float length, float height, Color color)
+        {
+            X = position.X;
+            Y = position.Y;
+            Z = position.Z;
+            Width = width;
+            Length = length;
+            Height = height;
+            Texture = Loader.LoadColor(color);
+            Color = color;
+        }
+        public Cube(Vector3 position, float width, float length, float height, int texture)
+        {
+            X = position.X;
+            Y = position.Y;
+            Z = position.Z;
+            Width = width;
+            Length = length;
+            Height = height;
             Texture = texture;
         }
-
+        
+        public Cube(float x, float y, float z, float width, float length, float height, int texture)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            Width = width;
+            Length = length;
+            Height = height;
+            Texture = texture;
+        }
+        public override string ToString()
+        {
+            return Color.ToString() + " cube with dimensions: (" + Width + ", " + Length + ", " + Height + ")";
+        }
         public void MoveQuad(float x, float y)
         {
             X += x;
@@ -178,7 +180,7 @@ namespace ROQWE
         /// </summary>
         /// <param name="cameraAngle"></param>
         /// <param name="sides">x=left,y=right,z=bottom,w=top</param>
-        public void DrawOnScreen(Vector3 cameraAngle,Vector4 sides)
+        public void DrawOnScreen(Vector3 cameraAngle, Vector3 cameraLookAt,Vector4 sides)
         {
 
             GL.UseProgram(VSID);
@@ -200,12 +202,11 @@ namespace ROQWE
 
             Matrix4 ModelMatrix = Scale * Rotation * Translation;
 
-            Matrix4 ViewMatrix = Matrix4.LookAt((Vector3)Game.Player.Position + CamPos, new Vector3(Game.Player.Position), Vector3.UnitZ);
-            //everything works from here up
-            Matrix4 ProjectionMatrix = Matrix4.CreateOrthographicOffCenter(sides.X, sides.Y, sides.Z, sides.W, 0.01f,100);// = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI - FoV, Game.window.Width / Game.window.Height, 0.1f, 1000);
+            Matrix4 ViewMatrix = Matrix4.LookAt(cameraLookAt + CamPos, cameraLookAt, Vector3.UnitZ);
 
-            //GL.Ortho(-1.0, 1.0, -1.0, 1.0, 0.0, 4.0);
-            //Matrix4 ProjectionMatrix = Matrix4.CreateOrthographic(Game.window.Width,Game.window.Height,0.01f,100);
+            //everything works from here up
+            Matrix4 ProjectionMatrix = Matrix4.CreateOrthographicOffCenter(sides.Y, sides.X, sides.W, sides.Z, 0.01f,100);
+
             Matrix4 Combined = ModelMatrix * ViewMatrix * ProjectionMatrix;
 
             GL.ProgramUniformMatrix4(VSID, GL.GetUniformLocation(VSID, "QuadMatrix"), false, ref Combined);
@@ -230,20 +231,19 @@ namespace ROQWE
         /// <summary>
         /// Draws the specified Cube in world.
         /// </summary>
-        public void DrawInWorld(Vector3 cameraAngle)
+        public void DrawInWorld(Vector3 cameraAngle, Vector3 cameraLookAt)
         {
             
             GL.UseProgram(VSID);
             Vector3 ObjectPosition = new Vector3((new Vector2(1) * (Position.Xy)))
             {
-                Z = Position.Z-1-Height
+                Z = Position.Z-(-1+Height)
             };
 
             Matrix4 Scale            = Matrix4.CreateScale(Width, Length,Height); 
             Matrix4 Translation      = Matrix4.CreateTranslation(ObjectPosition);
             Matrix4 Rotation         = Matrix4.CreateRotationZ((float)Angle);
 
-            Quaternion cameraRotQuat = Quaternion.FromEulerAngles(cameraAngle);
 
             Matrix4 CamRotZ          = Matrix4.CreateRotationZ(cameraAngle.Z);
             Matrix4 CamRotX          = Matrix4.CreateRotationX(cameraAngle.X);
@@ -254,7 +254,7 @@ namespace ROQWE
 
             Matrix4 ModelMatrix      = Scale * Rotation * Translation;
 
-            Matrix4 ViewMatrix       = Matrix4.LookAt((Vector3)Game.Player.Position + CamPos, new Vector3(Game.Player.Position), Vector3.UnitZ);
+            Matrix4 ViewMatrix       = Matrix4.LookAt(cameraLookAt + CamPos, cameraLookAt, Vector3.UnitZ);
 
             Matrix4 ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI-FoV,Game.window.Width/Game.window.Height,0.1f,1000);
             
@@ -263,7 +263,7 @@ namespace ROQWE
             GL.ProgramUniformMatrix4(VSID, GL.GetUniformLocation(VSID, "QuadMatrix"), false, ref Combined);
             GL.ProgramUniform4(VSID, GL.GetUniformLocation(VSID, "ColorIn"), Color);
             GL.ProgramUniform1(VSID, GL.GetUniformLocation(VSID, "SS"), 0);
-            Vector2 resolution = ((Vector3)(Vector)Game.window).Xy;
+            Vector2 resolution = (Vector2)ScreenSize;
             GL.ProgramUniform2(VSID, GL.GetUniformLocation(VSID, "Resolution"), ref resolution);
             Vector2 pos = new Vector2(0,0);
             GL.ProgramUniform2(VSID, GL.GetUniformLocation(VSID, "ScreenPos"), ref pos);

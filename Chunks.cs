@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using VectorLib;
 using Filler;
 
 namespace ROQWE
@@ -24,8 +24,8 @@ namespace ROQWE
         }
         public void RemoveAt(int x, int y, int z)
         {
-            IntVector CC = new IntVector((int)Math.Floor((x / 16f)), (int)Math.Floor((y / 16f)));          //chunk in map coordinate
-            IntVector CR = new IntVector(x,y) % (16, 16);      //chunk  relative to itself coordinate
+            IntVector CC = new IntVector(x / Chunk.Size, y / Chunk.Size);        //chunk in map coordinate
+            IntVector CR = new IntVector(x, y) % (Chunk.Size, Chunk.Size);      //chunk  relative to itself coordinate
             int index = ModifiedChunks.FindIndex(X => X.ChunkCoordinate == CC);
             if (index != -1)
             {
@@ -34,18 +34,18 @@ namespace ROQWE
         }
         public void Write(IntVector pos, int layer, char type, Cube pic, int health)
         {
-            Entity entity = new Entity(pos.X, pos.Y, type, Guid.NewGuid(), pic, health) { Z = layer};
+            Entity entity = new Entity(pos.X, pos.Y,layer, type, Guid.NewGuid(), pic, health);
             Write(entity);
         }
         public void Write(int x, int y, int z, char type, Cube pic, int health)
         {
-            Entity entity = new Entity(x, y, type, Guid.NewGuid(), pic, health) {Z = z };
+            Entity entity = new Entity(x, y,z, type, Guid.NewGuid(), pic, health);
             Write(entity);
         }
         public void Write(Entity entity)
         {
-            IntVector CC = new IntVector((int)Math.Floor((entity.X / 16f)), (int)Math.Floor((entity.Y / 16f)));         //chunk in map coordinate
-            IntVector CR = entity.Position2D % (16, 16);                                                 //chunk  relative to itself coordinate
+            IntVector CC = new IntVector(entity.X / Chunk.Size, entity.Y / Chunk.Size);          //chunk in map coordinate
+            IntVector CR = entity.Position.XY % (Chunk.Size, Chunk.Size);                                                 //chunk  relative to itself coordinate
             int index = ModifiedChunks.FindIndex(X => X.ChunkCoordinate == CC);
 
             if (index == -1)
@@ -69,8 +69,8 @@ namespace ROQWE
         }
         public char FindChar(int x,int y, int z)
         {
-            IntVector CC = new IntVector((int)Math.Floor((x / 16f)), (int)Math.Floor((y / 16f)));         //chunk in map coordinate
-            IntVector CR = new IntVector(x, y) % (16, 16);      //chunk  relative to itself coordinate
+            IntVector CC = new IntVector(x / Chunk.Size, y / Chunk.Size);        //chunk in map coordinate
+            IntVector CR = new IntVector(x, y) % (Chunk.Size, Chunk.Size);      //chunk  relative to itself coordinate
             Chunk Read = ModifiedChunks.Find(X => X.ChunkCoordinate == CC);
             if(Read == null || Read.Read((CR.X, CR.Y, z)) == null)
             {
@@ -94,8 +94,8 @@ namespace ROQWE
         }
         public string FindStr(int x, int y)
         {
-            IntVector CC = new IntVector((int)Math.Floor((x / 16f)), (int)Math.Floor((y / 16f)));         //chunk in map coordinate
-            IntVector CR = new IntVector(x, y) % (16, 16);      //chunk  relative to itself coordinate
+            IntVector CC = new IntVector(x / Chunk.Size, y / Chunk.Size);          //chunk in map coordinate
+            IntVector CR = new IntVector(x, y) % (Chunk.Size, Chunk.Size);      //chunk  relative to itself coordinate
             Chunk Read = ModifiedChunks.Find(C => C.ChunkCoordinate == CC);
             string returned = "";
             if (Read == null)
@@ -124,18 +124,18 @@ namespace ROQWE
         }
         public Entity Find(int x, int y, int z)
         {
-            IntVector CC = new IntVector((int)Math.Floor((x / 16f)), (int)Math.Floor((y / 16f)));         //chunk in map coordinate
-            IntVector CR = new IntVector(x, y) % (16, 16);       //chunk  relative to itself coordinate
+            IntVector CC = new IntVector(x / Chunk.Size, y / Chunk.Size);       //chunk in map coordinate
+            IntVector CR = new IntVector(x, y) % (Chunk.Size, Chunk.Size);       //chunk  relative to itself coordinate
             Chunk Read = ModifiedChunks.Find(X => X.ChunkCoordinate == CC);
             if (Read == null)
             {
-                return new Entity(CR.X, CR.Y, ' ', Guid.NewGuid(), null, 1);
+                return new Entity(CR.X, CR.Y, z, ' ', Guid.NewGuid(), null, 1);
             }
             else
             {
                 if(Read.Read((CR.X, CR.Y, z)) == null)
                 {
-                    return new Entity(CR.X, CR.Y, ' ', Guid.NewGuid(), null, 1);
+                    return new Entity(CR.X, CR.Y,z, ' ', Guid.NewGuid(), null, 1);
                 }
                 Entity character = Read.Read((CR.X, CR.Y, z));
                 return character;

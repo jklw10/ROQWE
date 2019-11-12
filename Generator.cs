@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Filler;
+using VectorLib;
 
 namespace ROQWE
 {
@@ -13,15 +14,10 @@ namespace ROQWE
         readonly Map Level;
         public List<Node[]> Nodelist = new List<Node[]> { };
         public List<List<Node[]>> connected = new List<List<Node[]>> { };
-        
+        public List<Room> rooms = new List<Room>();
         public Generator(Map level)
         {
             Level = level;
-        }
-        public static Node[] Test()
-        {
-            return FindClosest(new Node[] {new Node(10,10,0), new Node(20, 20, 0) {Enabled=false } }, new Node[] { new Node(30, 20, 0) { Enabled = false}, new Node(40, 30, 0) }, false);
-            
         }
         
         public void Generate()
@@ -304,9 +300,13 @@ namespace ROQWE
                             //writes a door if spot is in the central axis of the room
                             Entity door = Types.Door((X + x, Y + y));
                             Level.Write(door);
+                            //writes a loor under the door
+                            Entity floor = Types.Floor((X + x, Y + y));
+                            Level.Write(floor);
                         }
                         else
                         {
+                            //makes a square around th perimeter of a rectangle
                             Entity wall = Types.Wall((X + x, Y + y));
                             Level.Write(wall);
                         }
@@ -318,6 +318,29 @@ namespace ROQWE
                     }
                 }   
             }
+        }
+    }
+    class Room
+    {
+        public Node[] roomNodes = new Node[] { };
+        public Vector start;
+        public Vector end;
+
+        public Room(Vector startCorner, Vector roomSize, int id)
+        {
+            roomNodes = new Node[]
+            {
+                new Node((startCorner.X - 1,                startCorner.Y - 1               ),id){Enabled = true },
+                new Node((startCorner.X + roomSize.X + 1,   startCorner.Y - 1               ),id){Enabled = true},
+                new Node((startCorner.X + roomSize.X + 1,   startCorner.Y + roomSize.Y + 1  ),id){Enabled = true},
+                new Node((startCorner.X - 1,                startCorner.Y + roomSize.Y + 1  ),id){Enabled = true},
+                new Node((startCorner.X + roomSize.X / 2,   startCorner.Y - 1               ),id){Enabled = true},
+                new Node((startCorner.X + roomSize.X + 1,   startCorner.Y + roomSize.Y / 2  ),id){Enabled = true},
+                new Node((startCorner.X + roomSize.X / 2,   startCorner.Y + roomSize.Y + 1  ),id){Enabled = true},
+                new Node((startCorner.X - 1,                startCorner.Y + roomSize.Y / 2  ),id){Enabled = true}
+            };
+            start   = startCorner;
+            end     = startCorner + roomSize;
         }
     }
 }

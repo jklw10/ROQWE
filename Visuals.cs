@@ -15,9 +15,7 @@ namespace ROQWE
             int ID = GL.CreateProgram();                
             foreach (var Unit in Shaders)               
             {                                           
-                GL.AttachShader(ID, Unit);              
-                                                        
-                                                        
+                GL.AttachShader(ID, Unit);               
             }                                           
             GL.LinkProgram(ID);                         
                                                         

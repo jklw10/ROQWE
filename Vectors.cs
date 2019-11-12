@@ -285,7 +285,10 @@ namespace ROQWE
         {
             return new Vector3((float)v.X, (float)v.Y, 0);
         }
-
+        public static explicit operator Vector2(Vector v)
+        {
+            return new Vector2((float)v.X, (float)v.Y);
+        }
         public static implicit operator Vector(Vector2 v)
         {
             return new Vector(v.X, v.Y);
@@ -394,66 +397,7 @@ namespace ROQWE
 
         
 
-        public static bool Raycast(Entity source, Entity target)
-        {
-            if (target == null)
-            {
-                return false;
-            }
-            Vector TargetHighAngle;
-            Vector TargetLowAngle;
-            Vector Source      = source.Pic.QuadPos();
-            Vector SourceAngle = RadiansToVector(source.Pic.Angle, 1);
-            Vector TopLeft     = target.Pic.TopLeft;
-            Vector TopRight    = target.Pic.TopRight;
-            Vector BottomRight = target.Pic.BottomRight;
-            Vector BottomLeft  = target.Pic.BottomLeft;
-            double Angle1 = Math.Abs(CrossProduct(BottomRight - TopLeft, SourceAngle));
-            double Angle2 = Math.Abs(CrossProduct(TopRight - BottomLeft, SourceAngle));
-            if (Angle1 >=  Angle2)
-            {
-                TargetHighAngle = Source - TopRight;
-                TargetLowAngle  = Source - BottomLeft;
-            }                      
-            else                  
-            {                     
-                TargetHighAngle = Source - TopLeft;
-                TargetLowAngle  = Source - BottomRight;
-            }
-            
-            
-            return (IsBetween(SourceAngle, TargetHighAngle, TargetLowAngle));
-        }
-        public static bool Raycast(Vector source, Vector direction, Entity target)
-        {
-            if (target == null)
-            {
-                return false;
-            }
-
-            Vector TargetHighAngle;
-            Vector TargetLowAngle;
-            Vector SourceAngle = RadiansToVector(direction.Angle, 1);
-            Vector TopLeft =     ((Vector)target.Position2D - source) * Game.Scale + (new Vector(-Game.Scale, Game.Scale) / 2);
-            Vector TopRight =    ((Vector)target.Position2D - source) * Game.Scale + (new Vector(Game.Scale,  Game.Scale) / 2);
-            Vector BottomRight = ((Vector)target.Position2D - source) * Game.Scale + (new Vector(Game.Scale, -Game.Scale) / 2);
-            Vector BottomLeft =  ((Vector)target.Position2D - source) * Game.Scale + (new Vector(-Game.Scale,-Game.Scale) / 2);
-            double Angle1 = Math.Abs(CrossProduct(BottomRight - TopLeft, SourceAngle));
-            double Angle2 = Math.Abs(CrossProduct(TopRight - BottomLeft, SourceAngle));
-            if (Angle1 >= Angle2)
-            {
-                TargetHighAngle = TopRight;
-                TargetLowAngle  = BottomLeft;
-            }
-            else
-            {
-                TargetHighAngle = TopLeft;
-                TargetLowAngle  = BottomRight;
-            }
-
-
-            return (IsBetween(SourceAngle, TargetHighAngle, TargetLowAngle));
-        }
+        
     }
     //
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()

@@ -11,6 +11,7 @@ using OpenTK.Input;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
+//using VectorLib;
 //using System.Threading.Tasks;
 
 namespace ROQWE
@@ -66,7 +67,7 @@ namespace ROQWE
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            GL.ClearColor(Color.Black);
+            GL.ClearColor(Color.Green);
 
             Console.WriteLine(new Chunk((9,3)).ToString());
             
@@ -78,29 +79,22 @@ namespace ROQWE
 
             Generator map = new Generator(Level[Where]);
             map.Generate();
-            //Console.WriteLine("{0}, {1}",Generator.Test());
-            //Loader.UploadData(Where, Types.Snake(20,25,0));
-            //Entity Test = Loader.LoadEntity((20, 25, 0), Where);
-            //Console.WriteLine("type: {0} x: {1} y: {2}",Test.Type,Test.Position);
-            //Console.WriteLine("player chunk {0} coords:{1}",(Player.Position%new IntVector3D(16)), Player.Position);
-            /*Test = Loader.LoadEntity((25, 25, 0), Where);
-            Chunk teestee = Loader.LoadChunk((0, 0), Where);
-            teestee.ChunkCoordinate = (-2, -2);
-            Level[Where].ModifiedChunks.Add(teestee);
-            Level.Add(Loader.LoadMap(Where));
-            Where++; //*/
-            //Quad.Offset = new Vector(0, 0);
+
             DrawMap(Where);
             try
             {
-                Cube.Offset = (Player.Position2D * Scale);
+                Cube.Offset = (Player.Position.XY * Scale);
             }
             catch
             {
-                Level[Where].Write(Types.Player(new Vector(0, 0)));
+                Level[Where].Write(Types.Player(new Vector(0)));
                 DrawMap(Where);
-                Cube.Offset = (Player.Position2D * Scale);
+                Cube.Offset = (Player.Position.XY * Scale);
             }
+
+            //Player.inventory = new Inventory(4, 7);
+            //Player.inventory[1, 1] = Item.itemTypes[(int)Item.ItemIDs.Helmet];
+            //Console.WriteLine(Player.inventory[1,1].Image);
         }
 
 
@@ -124,13 +118,6 @@ namespace ROQWE
                 {
                     
                     Console.Clear();
-                    /*Console.WriteLine((e.X + ", " + e.Y) + "\n" +
-                    (Player.Pic.QuadPos().X + ", " + Player.Pic.QuadPos().Y) + "\n" +
-                    ((Player.Pic.QuadPos().X - e.Y) + ", " + (Player.Pic.QuadPos().Y - e.X)) + "\n" +
-
-                    ("Mouse angle in degrees:" + Vector.VectorToDegrees((Player.Pic.QuadPos().X - e.Y), (Player.Pic.QuadPos().Y - e.X))) + "\n" +
-                    ("Mouse angle in radians:" + Vector.VectorToRadians((Player.Pic.QuadPos().X - e.Y), (Player.Pic.QuadPos().Y - e.X))) + "\n" +
-                    (Player.Pic.GetAngle() / Math.PI * 180) + "\n" +//*/
                     Console.WriteLine(
                     e.X + ", " + e.Y
                     + "\n" +
@@ -143,27 +130,14 @@ namespace ROQWE
                     new Vector((e.X - Width / 2),(Height / 2 - e.Y)).Angle
                     
                     + "\n" +
-                    "tile: " + Level[Where].FindStr((IntVector)Vector.RotateVector(new Vector(e.X - Width / 2, Height / 2 - e.Y), -CameraAngle.Z) /Scale + Player.Position2D)
-                    /*Enemies[0].Position.X + "," +
-                    Enemies[0].Position.Y + " " + 
-                    Level[Where].FindChar(Enemies[0].Position) + "\n" +
-                    Enemies[1].Position.X + "," +
-                    Enemies[1].Position.Y + " " +
-                    Level[Where].FindChar(Enemies[1].Position)//*/
+                    "tile: " + Level[Where].FindStr((IntVector)Vector.RotateVector(new Vector(e.X - Width / 2, Height / 2 - e.Y), -CameraAngle.Z) /Scale + Player.Position.XY)
+                    
                     );
-                    /*Vector.ThetaOf(Vector.RadiansToVector(Player.Pic.GetAngle(), 100), Player.Pic.QuadPos() - Walls[4].QuadPos()) + "\n" +
-                    (Player.Pic.GetAngle()- Vector.VectorToRadians(Player.Pic.QuadPos() - Walls[4].QuadPos()) ));
-                    //*/
                     timer = 0;
                 }
             }
-            //*/
             if (e.Mouse.RightButton == ButtonState.Pressed)
             {
-                //Vector mousestart = new Vector((e.X - Width / 2), (e.Y - Height / 2));
-
-                //CameraAngle.Z += (float)(mousestart.Angle - new Vector(mousestart.X - e.XDelta, mousestart.Y -e.YDelta).Angle);
-
                 CameraAngle -= new Vector3(0,0, e.XDelta / 75f);
                 if (CameraAngle.Y - e.YDelta / 75f < Math.PI/2 && CameraAngle.Y - e.YDelta / 75f > -Math.PI/2)
                 {
@@ -187,22 +161,22 @@ namespace ROQWE
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Player.Pic.DrawInWorld(CameraAngle);
+            Player.Pic.DrawInWorld(CameraAngle, Player.Position);
             lock (InView)
             {
                 foreach (Entity entity in InView)
                 {
                     //draws the map in 3d for player to move in
-                    entity.Pic.DrawInWorld(CameraAngle);
+                    entity.Pic.DrawInWorld(CameraAngle, Player.Position);
                     //draws the minimap
-                    entity.Pic.DrawOnScreen(CameraAngle, new Vector4(window.X-600,window.X, window.Y - 600, window.Y));
+                    entity.Pic.DrawOnScreen(CameraAngle, Player.Position, new Vector4(window.X-600,window.X, window.Y - 600, window.Y));
                 }
             }
             for(int x = 0; x < Player.inventory.size.X; x++)
-            {//draws each item in inventory on screen (currently as their own camera for each)
+            {//draws each item in inventory on screen 
                 for (int y = 0; y < Player.inventory.size.Y; y++)
                 {
-                    Player.inventory[x, y].Image.DrawOnScreen(new Vector3(x, y, 1),new Vector4(0,window.X,0,window.Y));
+                    Player.inventory[x, y].Image.DrawInWorld(new Vector3(0, 1, 0), new Vector3(0,0,1));//,new Vector4(0,window.X,0,window.Y));
                 }
             }
             //foreach (Entity debug in DQD)
@@ -221,7 +195,7 @@ namespace ROQWE
         {
             base.OnResize(e);
             
-            Cube.Offset = Player.Position2D * Scale;
+            Cube.Offset = Player.Position.XY * Scale;
 
         } 
 
@@ -234,19 +208,19 @@ namespace ROQWE
             }
             if (e.Key == Key.Right)
             {
-                CameraAngle = CameraAngle - new Vector3(0, 0, 0.1f);
+                CameraAngle -= new Vector3(0, 0, 0.1f);
             }
             if (e.Key == Key.Left)
             {
-                CameraAngle = CameraAngle + new Vector3(0, 0, 0.1f);
+                CameraAngle += new Vector3(0, 0, 0.1f);
             }
             if (e.Key == Key.Up)
             {
-                CameraAngle = CameraAngle - new Vector3(0, 0.1f, 0);
+                CameraAngle -= new Vector3(0, 0.1f, 0);
             }
             if (e.Key == Key.Down)
             {
-                CameraAngle = CameraAngle + new Vector3(0, 0.1f, 0);
+                CameraAngle += new Vector3(0, 0.1f, 0);
             }
             if (e.Key == Key.U)
             {
@@ -267,7 +241,7 @@ namespace ROQWE
                         Console.WriteLine("Unable to name a previously " +
                             "named thread.");
                     }
-                    Vector position = Player.Position2D;
+                    Vector position = Player.Position.XY;
                     double Angle = Player.Pic.Angle;
                     for (double rad = -Math.PI; rad < Math.PI; rad += 0.01)
                     {
@@ -317,28 +291,22 @@ namespace ROQWE
             base.OnMouseDown(e);
             if (e.Button == MouseButton.Left)
             {
-                Entity shot = Raycasting.Cast(Player.Position2D, Vector.RadiansToVector(Player.Pic.Angle, 1));
+                Entity shot = Raycasting.Cast(Player.Position.XY, Vector.RadiansToVector(Player.Pic.Angle, 1));
                 Console.WriteLine("shot:" + shot.Type + "  X:" + shot.X + "  Y:" + shot.Y);
                 Entity lit = InView.Find(x => x.Position == shot.Position);
-                if (!(lit is null)) { lit.Pic.highlight += -10; }
+                if (!(lit is null)) { lit.Pic.highlight -= 10; }
 
-                Player.Pic.highlight += -10;
 
                 if (shot.Type == Types.snakeType)
                 {
                     Level[Where].Find(shot.Position).Health -= 1;
                     if (Level[Where].Find(shot.Position).Health <= 0)
                     {
-                        InView.RemoveAt(InView.FindIndex(x => x.Position2D == shot.Position2D));
+                        InView.RemoveAt(InView.FindIndex(x => x.Position.XY == shot.Position.XY));
                         Level[Where].RemoveAt(shot.Position);
                     }
                 }
             }
-            
-        }
-        static void SaveMap()
-        {
-
         }
 
         /// <summary>
@@ -394,7 +362,7 @@ namespace ROQWE
         /// <param name="enemy"></param>
         static void EnemyThink(Entity enemy)
         {
-            MoveEntity(enemy, Pathfinding.NextStep(Player.Position2D, enemy.Position2D));
+            MoveEntity(enemy, Pathfinding.NextStep(Player.Position.XY, enemy.Position.XY));
         }
 
         /// <summary>
@@ -433,7 +401,7 @@ namespace ROQWE
         /// <param name="y"></param>
         static void MoveEntity(Entity character, IntVector move)
         {
-            Vector NextSpot = character.Position2D + move;
+            Vector NextSpot = character.Position.XY + move;
             switch (Level[Where].FindChar(character.Position + move))
             {
                 case Types.doorType:

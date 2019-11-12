@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VectorLib;
 
 namespace ROQWE
 {
     class Pathfinding
     {
-        
         public static Vector NextStep(Vector position, Vector target)
         {
             Vector direction = target - position;

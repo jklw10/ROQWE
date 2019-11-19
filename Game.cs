@@ -67,7 +67,7 @@ namespace ROQWE
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            GL.ClearColor(Color.Green);
+            GL.ClearColor(Color.Black);
 
             Console.WriteLine(new Chunk((9,3)).ToString());
             
@@ -176,7 +176,7 @@ namespace ROQWE
             {//draws each item in inventory on screen 
                 for (int y = 0; y < Player.inventory.size.Y; y++)
                 {
-                    Player.inventory[x, y].Image.DrawInWorld(new Vector3(0, 1, 0), new Vector3(0,0,1));//,new Vector4(0,window.X,0,window.Y));
+                   Player.inventory[x, y].Image.DrawInWorld(new Vector3(0, 1, 0), new Vector3(0,0,1));//,new Vector4(0,window.X,0,window.Y));
                 }
             }
             //foreach (Entity debug in DQD)
@@ -194,7 +194,8 @@ namespace ROQWE
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            
+
+            Cube.ScreenSize = (Vector)this;
             Cube.Offset = Player.Position.XY * Scale;
 
         } 
@@ -284,6 +285,17 @@ namespace ROQWE
                     
                 }
             }
+            if (e.Key == Key.I)
+            {
+                for (int y = 0; y < Player.inventory.size.Y; y++)
+                {//draws each item in inventory on screen 
+                    for (int x = 0; x < Player.inventory.size.X; x++)
+                    {
+                        Console.Write(Player.inventory[x,y] +" ");
+                    }
+                    Console.WriteLine();
+                }
+            }
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -362,7 +374,7 @@ namespace ROQWE
         /// <param name="enemy"></param>
         static void EnemyThink(Entity enemy)
         {
-            MoveEntity(enemy, Pathfinding.NextStep(Player.Position.XY, enemy.Position.XY));
+            MoveEntity(enemy, Pathfinding.NextStep(enemy.Position.XY ,Player.Position.XY));
         }
 
         /// <summary>
@@ -402,7 +414,8 @@ namespace ROQWE
         static void MoveEntity(Entity character, IntVector move)
         {
             Vector NextSpot = character.Position.XY + move;
-            switch (Level[Where].FindChar(character.Position + move))
+            Entity NextSpotEntity = Level[Where].Find(character.Position + move);
+            switch (NextSpotEntity.Type)
             {
                 case Types.doorType:
                 case Types.floorType:
@@ -425,19 +438,37 @@ namespace ROQWE
                     }
                     break;
                 case Types.snakeType:
-                    if (character.Type == Types.playerType)
-                    {
-                        Console.Write("stab"); //TODO dmg
-                        //Enemies.Find(f => f.Position == NextSpot).Health -= 1;
-                    }
-                    break;
                 case Types.playerType:
-                    Console.Write("bite");
+                    Attack(character,NextSpotEntity);
                     break;
                 default:
                     break;
             }
 
+        }
+        public static void Attack(Entity attacker, Entity other)
+        {
+            Stats attack = attacker.inventory.TotalStats() + attacker.BaseStats;
+            Stats defend = other.inventory.TotalStats() + other.BaseStats;
+            if (attack.damage > 0)
+            {
+                other.Health -= Math.Abs((attack.damage - (defend.defence / (Math.Abs(attack.damage - defend.defence)+2))));
+                if (other.Health <= 0)
+                {
+                    if(other != Player)
+                    {
+                        InView.Remove(other);
+                        Level[Where].RemoveAt(other.Position);
+                    }
+                    Node emptyslot = attacker.inventory.FindEmptySlot();
+                    if (emptyslot.Enabled)
+                    {
+                        Item item = new Item();
+                        item.RollStats();
+                        attacker.inventory.SetItem(emptyslot.Coordinates,item);
+                    }
+                }
+            }
         }
     }
 }

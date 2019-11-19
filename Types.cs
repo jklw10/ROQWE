@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
-using VectorLib;
 
 namespace ROQWE
 {
@@ -15,7 +14,7 @@ namespace ROQWE
 
         readonly static Color door = Color.Brown;
         readonly static Color snake = Color.Green;
-        readonly static int wall = Loader.LoadTexture("images.jpg");
+        readonly static Color wall = Color.Black;
         readonly static int player = Loader.LoadTexture("images.jpg");
         readonly static Color floor = Color.Gray;
         public const char snakeType = 'S';
@@ -32,23 +31,23 @@ namespace ROQWE
         /// <returns></returns>
         public static Entity Snake(int x, int y, int z)
         {
-            return new Entity(x, y,z, snakeType, Guid.NewGuid(), new Cube(x,y,z,Game.Scale, Game.Scale, Game.Scale, snake), 10);
+            return new Entity(x, y,z, snakeType, Guid.NewGuid(), new Cube(x,y,z,Game.Scale, Game.Scale, Game.Scale, snake), new Stats(10,1,10));
         }
         public static Entity Wall(int x, int y, int z)
         {
-            return new Entity(x, y,z, wallType, Guid.NewGuid(), new Cube(x, y,z, Game.Scale, Game.Scale, Game.Scale, wall),  1);
+            return new Entity(x, y,z, wallType, Guid.NewGuid(), new Cube(x, y,z, Game.Scale, Game.Scale, Game.Scale, wall), new Stats(1, 1, 1));
         }
         public static Entity Player(int x, int y, int z)
         {
-            return new Entity(x, y,z, playerType, Guid.NewGuid(), new Cube(x,y,z, Game.Scale, Game.Scale, Game.Scale, player), 10);
+            return new Entity(x, y,z, playerType, Guid.NewGuid(), new Cube(x,y,z, Game.Scale, Game.Scale, Game.Scale, player), new Stats(100, 10, 10));
         }
         public static Entity Door(int x, int y, int z)
         {
-            return new Entity(x, y,z, doorType, Guid.NewGuid(), new Cube(x,y,z, Game.Scale, Game.Scale, Game.Scale, door), 10);
+            return new Entity(x, y,z, doorType, Guid.NewGuid(), new Cube(x,y,z, Game.Scale, Game.Scale, Game.Scale, door), new Stats(1, 1, 1));
         }
         public static Entity Floor(int x, int y, int z)
         {
-            return new Entity(x, y,z, floorType, Guid.NewGuid(), new Cube(x,y,z, Game.Scale, Game.Scale, 0.01f, floor), 10);
+            return new Entity(x, y,z, floorType, Guid.NewGuid(), new Cube(x,y,z, Game.Scale, Game.Scale, 0.01f, floor), new Stats(1, 1, 1));
         }
         public static Entity Door(IntVector3D Pos)
         {

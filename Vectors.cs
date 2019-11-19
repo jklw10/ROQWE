@@ -10,20 +10,6 @@ using OpenTK;
 
 namespace ROQWE
 {
-    /*struct Angle
-    {
-        private double Angl;
-        public Angle(double angle)
-        {
-            Angl = angle;
-        }
-        public static implicit operator double(Angle angl)
-        {
-            return angl.Angl;
-        }
-    }//*/
-    
-
 
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()

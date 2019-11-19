@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VectorLib;
 using Filler;
 
 namespace ROQWE
@@ -32,14 +31,14 @@ namespace ROQWE
                 ModifiedChunks[index].Write((CR.X, CR.Y, z), null);
             }
         }
-        public void Write(IntVector pos, int layer, char type, Cube pic, int health)
+        public void Write(IntVector pos, int layer, char type, Cube pic, Stats stats)
         {
-            Entity entity = new Entity(pos.X, pos.Y,layer, type, Guid.NewGuid(), pic, health);
+            Entity entity = new Entity(pos.X, pos.Y,layer, type, Guid.NewGuid(), pic, stats);
             Write(entity);
         }
-        public void Write(int x, int y, int z, char type, Cube pic, int health)
+        public void Write(int x, int y, int z, char type, Cube pic, Stats stats)
         {
-            Entity entity = new Entity(x, y,z, type, Guid.NewGuid(), pic, health);
+            Entity entity = new Entity(x, y,z, type, Guid.NewGuid(), pic, stats);
             Write(entity);
         }
         public void Write(Entity entity)
@@ -129,13 +128,13 @@ namespace ROQWE
             Chunk Read = ModifiedChunks.Find(X => X.ChunkCoordinate == CC);
             if (Read == null)
             {
-                return new Entity(CR.X, CR.Y, z, ' ', Guid.NewGuid(), null, 1);
+                return new Entity(CR.X, CR.Y, z, ' ', Guid.NewGuid(), null, new Stats(1));
             }
             else
             {
                 if(Read.Read((CR.X, CR.Y, z)) == null)
                 {
-                    return new Entity(CR.X, CR.Y,z, ' ', Guid.NewGuid(), null, 1);
+                    return new Entity(CR.X, CR.Y,z, ' ', Guid.NewGuid(), null, new Stats(1));
                 }
                 Entity character = Read.Read((CR.X, CR.Y, z));
                 return character;

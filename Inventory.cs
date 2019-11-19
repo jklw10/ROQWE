@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
-using VectorLib;
 
 namespace ROQWE
 {
     class Inventory //: IEnumerable<Item>
     {
         public Vector size;
-
         public Item[,] itemArray = new Item[,] { };
         public Item this[int x, int y]
         {
@@ -19,7 +17,7 @@ namespace ROQWE
             {
                 if (itemArray[x, y] is null)
                 {//if the item at point in array is null get an empty item
-                    Item returned = Item.itemTypes[(int)Item.ItemIDs.Empty];
+                    Item returned = new Item();
                     returned.Image.MoveQuad(x,y);
                     return returned;
                 }
@@ -43,16 +41,53 @@ namespace ROQWE
         /// </summary>
         /// <param name="position"></param>
         /// <param name="item"></param>
-        public void ItemAt(IntVector position, Item item)
+        public void SetItem(IntVector position, Item item)
         {
             itemArray[position.X, position.Y] = item;
         }
+        public Node FindEmptySlot()
+        {
+            Node returned = new Node(0, 0, 0) { Enabled = false };
+            for (int x = 0; x < size.X; x++)
+            {
+                for (int y = 0; y < size.Y; y++)
+                {
+                    if (itemArray[x,y] is null)
+                    {
+                        return new Node(x, y,0) { Enabled = true };
+                    }
+                }
+            }
+            return returned;
+        }
+        public Stats TotalStats()
+        {
+            Stats returned = new Stats(0);
+            for (int x = 0; x < size.X; x++)
+            {
+                for (int y = 0; y < size.Y; y++)
+                {
+                    if (this[x, y].equipped)
+                    {
+                        returned += this[x, y].Statuses;
+                    }
+                }
+            }
+            return returned;
+        }
     }
-    class Item
+    class Item 
     {
         public int itemType;
         public bool equipped;
-
+        private Stats statuses;
+        public Stats Statuses 
+        { 
+            get 
+            {
+                return statuses;
+            } 
+        }
         private Cube image;
         public Cube Image
         {
@@ -60,7 +95,7 @@ namespace ROQWE
             {
                 if (image is null) 
                 {
-                    return empty;
+                    return new Cube((IntVector3D)(0, 0, 0), 1, 1, 1, 0);
                 } else 
                 { 
                     return image; 
@@ -72,9 +107,18 @@ namespace ROQWE
                 image = value;
             }
         }
-        readonly Stats statuses;
-
-        public static readonly Cube empty = new Cube((IntVector3D)(0,0,0),1,1,1,0);
+        public override string ToString()
+        {
+            return "{" + statuses+"}";
+        }
+        public void RollStats()
+        {
+            Random rng = new Random(DateTime.Now.Millisecond);
+            statuses.damage = (float)rng.NextDouble() * 10;
+            statuses.health = (float)rng.NextDouble() * 100;
+            statuses.defence = (float)rng.NextDouble() * 50;
+        }
+        //public static readonly Cube emptySlot = new Cube((IntVector3D)(0, 0, 0), 1, 1, 1, 0);
         /// <summary>
         /// creates an item with pic and stats
         /// </summary>
@@ -88,6 +132,16 @@ namespace ROQWE
             image = pic;
             statuses = stats;
         }
+        /// <summary>
+        /// creates a new empty item
+        /// </summary>
+        public Item()
+        {
+            itemType = (int)ItemIDs.Empty;
+
+            image = new Cube((IntVector3D)(0, 0, 0), 1, 1, 1, 0);
+            statuses = new Stats(0, 0, 0);
+        }
         public enum ItemIDs
         {
             Empty,
@@ -99,22 +153,30 @@ namespace ROQWE
             Accessories,
             Misc
         }
-        public static Item[] itemTypes = new Item[]
-        {
-            new Item((int)ItemIDs.Empty,empty, new Stats(0,0,0))
-        };
+
     }
-    class Stats 
+    struct Stats 
     {
-        float health;
-        float damage;
-        float defence;
+        public float health;
+        public float damage;
+        public float defence;
         public Stats(float health,float damage, float defence)
         {
             this.health = health;
             this.damage = damage;
             this.defence = defence;
         }
+        public Stats(float all)
+        {
+            this.health = all;
+            this.damage = all;
+            this.defence = all;
+        }
+        public override string ToString()
+        {
+            return (int)Math.Round(health) +" hp " + (int)Math.Round(damage) + " dmg " + (int)Math.Round(defence) + " def";
+        }
+
         /// <summary>
         /// adds values together
         /// </summary>

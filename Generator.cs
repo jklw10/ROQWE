@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Filler;
-using VectorLib;
 
 namespace ROQWE
 {
@@ -44,6 +43,11 @@ namespace ROQWE
                     {
                         //puts player into the first room that is generated
                         Level.Write(Types.Player(start + size / 2));
+                    }
+                    else
+                    {
+
+                        Level.Write(Types.Snake(start + size / 2));
                     }
                 }
                 else

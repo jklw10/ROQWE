@@ -48,6 +48,12 @@ namespace ROQWE
             get { return IntVectorToRadians(this); }
             set { XY.Angle = value.X; }
         }
+
+        public override string ToString()
+        {
+            return "(" + X + "," + Y + "," + Z + ")";
+        }
+
         /// <summary>
         /// (X, Y)
         /// </summary>

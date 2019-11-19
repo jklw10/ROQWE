@@ -38,7 +38,7 @@ namespace ROQWE
 
         public static Vector Offset { get; set; }
 
-        private Vector ScreenSize = new Vector(Game.window.Width, Game.window.Height);
+        public static Vector ScreenSize = new Vector(Game.window.Width, Game.window.Height);
         
         private Color Color = Color.Black;
         private int   Texture = Loader.LoadColor(Color.Blue);
@@ -237,7 +237,7 @@ namespace ROQWE
             GL.UseProgram(VSID);
             Vector3 ObjectPosition = new Vector3((new Vector2(1) * (Position.Xy)))
             {
-                Z = Position.Z-(-1+Height)
+                Z = Position.Z - (Height*0.5f)
             };
 
             Matrix4 Scale            = Matrix4.CreateScale(Width, Length,Height); 
@@ -256,14 +256,14 @@ namespace ROQWE
 
             Matrix4 ViewMatrix       = Matrix4.LookAt(cameraLookAt + CamPos, cameraLookAt, Vector3.UnitZ);
 
-            Matrix4 ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI-FoV,Game.window.Width/Game.window.Height,0.1f,1000);
+            Matrix4 ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI-FoV, (float)(ScreenSize.X/ScreenSize.Y),0.1f,1000);
             
             Matrix4 Combined         = ModelMatrix * ViewMatrix * ProjectionMatrix;
 
             GL.ProgramUniformMatrix4(VSID, GL.GetUniformLocation(VSID, "QuadMatrix"), false, ref Combined);
             GL.ProgramUniform4(VSID, GL.GetUniformLocation(VSID, "ColorIn"), Color);
             GL.ProgramUniform1(VSID, GL.GetUniformLocation(VSID, "SS"), 0);
-            Vector2 resolution = (Vector2)ScreenSize;
+            Vector2 resolution = (Vector2)(Vector)Game.window;
             GL.ProgramUniform2(VSID, GL.GetUniformLocation(VSID, "Resolution"), ref resolution);
             Vector2 pos = new Vector2(0,0);
             GL.ProgramUniform2(VSID, GL.GetUniformLocation(VSID, "ScreenPos"), ref pos);

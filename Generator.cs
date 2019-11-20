@@ -9,11 +9,9 @@ namespace ROQWE
 {
     class Generator
     {
-        public List<Node[]> Rooms = new List<Node[]> { };
         readonly Map Level;
-        public List<Node[]> Nodelist = new List<Node[]> { };
-        public List<List<Node[]>> connected = new List<List<Node[]>> { };
-        public List<Room> rooms = new List<Room>();
+        public List<List<Room>> connections = new List<List<Room>> { };
+        public List<Room> Rooms = new List<Room> { };
         public Generator(Map level)
         {
             Level = level;
@@ -29,9 +27,9 @@ namespace ROQWE
                 IntVector start = (rng.Next(0, 200), rng.Next(0, 200));
                 bool possible = true;
                 //checks if room overlaps with other rooms
-                foreach (Node[] room in Rooms)
+                foreach (Room room in Rooms)
                 {
-                    if (!(start > (IntVector)room[1].Coordinates || start + size < (IntVector)room[0].Coordinates))
+                    if (!(start > room.end || start + size < room.start))
                     {
                         possible = false;
                     }
@@ -55,148 +53,165 @@ namespace ROQWE
                     i--;
                 }
             }
-            //adds all rooms' bottom left corners to a list
-            Node[] rooms = new Node[Rooms.Count];
-            for (int y = 0; y < Rooms.Count; y++)
-            {
-                rooms[y] = Rooms.ToArray()[y][0];
-                rooms[y].Enabled = true;
-            }
             //generates pathing between rooms
             for (int i = 0; i < Rooms.Count; i++)
             {
-                Node[] thisRoom = new Node[] { Rooms[i][0] };
+                Rooms[i].enabled = false;
+                Room[] roomSet = FindClosestRooms(Rooms.ToArray(), new Room[] { Rooms[i] }, true);
+                Rooms[i].enabled = true;
 
-                thisRoom[0].Enabled = false;
-                Node[] roomSet = FindClosest(rooms, thisRoom, true); 
-                thisRoom[0].Enabled = true;
-
-                Node[] room1Nodes = new Node[8];
-                Node[] room2Nodes = new Node[8];
 
                 //takes the rooms bottom left corner and tries to find a rooms nodes based on id's
-                room1Nodes = Nodelist.Find(x => x[0].Id == roomSet[0].Id);
-                room2Nodes = Nodelist.Find(x => x[0].Id == roomSet[1].Id);
 
                 bool found = false; 
                 List<int> ids = new List<int>(); //List for room id's to check if an id has already been found earlier'
 
                 //tests if connections to rooms made earlier exist
-                for (int x = 0; x < connected.Count; x++)
+                for (int x = 0; x < connections.Count; x++)
                 {
-                    for (int y = 0; y < connected[x].Count; y++)
+                    for (int y = 0; y < connections[x].Count; y++)
                     {
-                        if (connected[x][y][0].Id == room1Nodes[0].Id && !ids.Contains(room1Nodes[0].Id))
+                        if (connections[x][y].Id == roomSet[0].Id && !ids.Contains(roomSet[0].Id))
                         {
-                            ids.Add(room1Nodes[0].Id);
-                            connected[x].Add(room2Nodes);
+                            ids.Add(roomSet[0].Id);
+                            connections[x].Add(roomSet[0]);
                             found =true;
                         }
-                        else if (connected[x][y][0].Id == room2Nodes[0].Id && !ids.Contains(room2Nodes[0].Id))
+                        else if (connections[x][y].Id == roomSet[1].Id && !ids.Contains(roomSet[1].Id))
                         {
-                            ids.Add(room2Nodes[0].Id);
-                            connected[x].Add(room2Nodes);
+                            ids.Add(roomSet[1].Id);
+                            connections[x].Add(roomSet[1]);
                             found = true;
                         }
                     }
                 }
                 if (!found) // if no connections between one of the rooms and other rooms is found then make a new connection list
                 {
-                    ids.Add(room1Nodes[0].Id);
-                    ids.Add(room2Nodes[0].Id);
-                    connected.Add( new List<Node[]> { room1Nodes, room2Nodes });
+                    ids.Add(roomSet[0].Id);
+                    ids.Add(roomSet[1].Id);
+                    connections.Add(roomSet.ToList());
                 }
-                CreatePathing(room1Nodes,room2Nodes);
+                CreatePathing(roomSet[0], roomSet[1]);
             }
             //connects all unconnected rooms
-            for (int x = 0; x < connected.Count-1; x++)
+            for (int x = 0; x < connections.Count-1; x++)
             {
-                List<Node> candidate1 = new List<Node>();
-                List<Node> candidate2 = new List<Node>();
-                //adds all nodes of rooms to a big list that contains all connected rooms' nodes.
-                for (int y = 0; y < connected[x].Count; y++)
+                Room[] candidates = null;
+                //gets 2 closest rooms from 2 room clusters
+                for (int y = 0; y < connections[x].Count; y++)
                 {
-                    candidate1.AddRange(connected[x][y].ToList());
+                    candidates = FindClosestRooms(connections[x].ToArray(), connections[x+1].ToArray(),false);
                 }
-                for (int y = 0; y < connected[x+1].Count; y++)
-                {
-                    candidate2.AddRange(connected[x+1][y].ToList());
-                }
-                CreatePathing(candidate1.ToArray(),candidate2.ToArray());
+                CreatePathing(candidates[0],candidates[1]);
             }
         }
         /// <summary>
-        /// finds the closest points between nodeset1 and 2
-        /// returns from respective sets to places [0] and [1]
-        /// doesn't check if nodelist 2 items are false if ignoreSecond is true;
+        /// find's the 2 closest nodes in the room returned in an array where first element is the node from the first room and second element fromt he second room
         /// </summary>
-        /// <param name="nodeSet1"></param>
-        /// <param name="nodeSet2"></param>
+        /// <param name="room1"></param>
+        /// <param name="room2"></param>
+        /// <param name="ignoreSecond"></param>
         /// <returns></returns>
-        public static Node[] FindClosest(Node[] nodeSet1, Node[] nodeSet2, bool ignoreSecond)
+        public static Node[] FindClosest(Node[] room1, Node[] room2, bool ignoreSecond)
         {
-            List<Node> nodes = new List<Node>();
+            List<Node> comparisons = new List<Node>();
 
-            for (int y = 0; y < nodeSet2.Length; y++)
+            for (int y = 0; y < room2.Length; y++)
             {
-                for (int x = 0; x < nodeSet1.Length; x++)
+                for (int x = 0; x < room1.Length; x++)
                 {
-                    if (nodeSet1[x].Enabled) //checks if node is usable
+                    if (room1[x].Enabled) //checks if node is usable
                     {
-                        if (nodeSet2[y].Enabled || ignoreSecond) //checks if node is usable
+                        if (room2[y].Enabled || ignoreSecond) //checks if node is usable
                         {
-                            nodes.Add(new Node(nodeSet1[x].Coordinates - nodeSet2[y].Coordinates, x + y * nodeSet1.Length)); //takes the distance between 2 nodes adds it to a list with identifier based on node locations in sets
+                            comparisons.Add(new Node(room1[x].Coordinates - room2[y].Coordinates, x + y * room1.Length)); //takes the distance between 2 nodes adds it to a list with identifier based on node locations in sets
                         }
                     }
                 }
             }
-            nodes.Sort();//sorts distances to eachother from the shortest to longest 
-            Node start = nodeSet1[nodes[0].Id % nodeSet1.Length]; //selects node from the list that had the shortest distance to nodeset2
-            Node end = nodeSet2[nodes[0].Id / nodeSet1.Length]; //same for for this set
+            comparisons.Sort();//sorts distances to eachother from the shortest to longest 
+            Node start  = room1[comparisons[0].Id % room1.Length]; //selects node from the list that had the shortest distance to nodeset2
+            Node end    = room2[comparisons[0].Id / room1.Length]; //same for for this set
             return new Node[] { start, end };
+        }
+        /// <summary>
+        /// finds closest 2 rooms from a list
+        /// </summary>
+        /// <param name="nodeSet1"></param>
+        /// <param name="nodeSet2"></param>
+        /// <returns></returns>
+        public static Room[] FindClosestRooms(Room[] room1, Room[] room2, bool ignoreSecond)
+        {
+            List<Node> comparisons = new List<Node>();
+
+            for (int y = 0; y < room2.Length; y++)
+            {
+                for (int x = 0; x < room1.Length; x++)
+                {
+                    if (room1[x].enabled)
+                    {
+                        if (room2[y].enabled || ignoreSecond)
+                        {
+                            comparisons.Add(new Node(room1[x].start - room2[y].start, x + y * room1.Length));//takes distance between 2 rooms
+                        }
+                    } 
+                     
+                }
+            }
+            comparisons.Sort();//sorts distances to eachother from the shortest to longest 
+            Room start  = room1[comparisons[0].Id % room1.Length]; //selects node from the list that had the shortest distance to nodeset2
+            Room end    = room2[comparisons[0].Id / room1.Length]; //same for for this set
+            return new Room[] { start, end };
         }
         /// <summary>
         /// finds the closest 2 nodes of node sets and makes a path between them.
         /// </summary>
         /// <param name="nodeSet1"></param>
         /// <param name="nodeSet2"></param>
-        public void CreatePathing(Node[] nodeSet1, Node[] nodeSet2)
+        public void CreatePathing(Room room1, Room room2)
         {
-            Node[] set = FindClosest(nodeSet1, nodeSet2, false);
-            nodeSet1[Array.IndexOf(nodeSet1, set[0])].Enabled = false;//disables node's ability to be found in FindClosest()
-            nodeSet2[Array.IndexOf(nodeSet2, set[1])].Enabled = false;
+            Node[] set = FindClosest(room1.roomNodes, room2.roomNodes, false); //find the nodes closest to eachother from each room
+
+            room1.roomNodes[Array.IndexOf(room1.roomNodes, set[0])].Enabled = false;//disables node's ability to be found in FindClosest()
+            room2.roomNodes[Array.IndexOf(room2.roomNodes, set[1])].Enabled = false;
+
+            //set[0].Enabled = false;
+            //set[1].Enabled = false;
+
             IntVector start = set[0].Coordinates;
             IntVector end =   set[1].Coordinates;
             DrawWalls(start, end);
             DrawFloors(start, end);
-            Console.WriteLine("{0} connects to {1}", set);
-            for (int x = 0; x < 4; x++)
+            //Console.WriteLine("{0} connects to {1}", set);
+            for (int x = 0; x < 4; x++) //1-4 are indexes for room Corner nodes (so this is if in corner do:)
             {
-
-                if (set[0] == nodeSet1[x])
+                if (set[0] == room1.roomNodes[x])
                 {
-                    Node[] set2 = FindClosest(nodeSet1, new Node[] { set[0] }, true);
-                    nodeSet1[Array.IndexOf(nodeSet1, set2[0])].Enabled = false; 
-                    start = set2[0].Coordinates;
-                    end = set2[1].Coordinates;
+                    Node[] set2 = FindClosest(room1.roomNodes, new Node[] { set[0] }, false);
+                    room1.roomNodes[Array.IndexOf(room1.roomNodes, set2[1])].Enabled = false; 
+
+                    start = set2[1].Coordinates;
+                    end = set2[0].Coordinates;
+
                     DrawWalls(start, end);
                     DrawFloors(start, end);
-                    Console.WriteLine("{0} connects to {1}", set2);
+                    //Console.WriteLine("{0} connects to {1}", set2);
                     break;
                 }
-                if (set[1] == nodeSet2[x])
+                if (set[1] == room2.roomNodes[x])
                 {
-                    Node[] set2 = FindClosest(nodeSet2, new Node[] { set[1] }, true);
-                    nodeSet2[Array.IndexOf(nodeSet2, set2[0])].Enabled = false;
-                    start = set2[0].Coordinates;
-                    end = set2[1].Coordinates;
+                    Node[] set2 = FindClosest(room2.roomNodes, new Node[] { set[1] }, false);
+                    room2.roomNodes[Array.IndexOf(room2.roomNodes, set2[1])].Enabled = false;
+
+                    start = set2[1].Coordinates;
+                    end = set2[0].Coordinates;
+
                     DrawWalls(start, end);
                     DrawFloors(start, end);
-                    Console.WriteLine("{0} connects to {1}", set2);
+                    //Console.WriteLine("{0} connects to {1}", set2);
                     break;
                 }
             }
-
         }
         /// <summary>
         /// makes a 3 wide line of cubes between 2 points on the map
@@ -271,26 +286,13 @@ namespace ROQWE
         public void CreateBox(int width, int height, int x, int y, int id)
         {
             //saves the rooms bottom left and top right corners
-            Rooms.Add(new Node[2]{new Node((x, y),id),new Node((x + width, y + height),id)});
+            Rooms.Add(new Room((x,y),(width,height),id));
 
             //fills the rooms corners with walls
             Level.Write(Types.Wall((x + width,  y + height)));
             Level.Write(Types.Wall((x + width,  y)));
             Level.Write(Types.Wall((x,          y + height)));
             Level.Write(Types.Wall((x,          y)));
-
-            //adds path finding nodes to the rooms corners and entrances
-            Nodelist.Add(new Node[] 
-            {
-                new Node((x - 1,         y - 1         ),id){Enabled = true },
-                new Node((width + x + 1, y - 1         ),id){Enabled = true},
-                new Node((width + x + 1, height + y + 1),id){Enabled = true},
-                new Node((x - 1,         height + y + 1),id){Enabled = true},
-                new Node((x + width / 2, y - 1         ),id){Enabled = true},
-                new Node((x + width + 1, y + height / 2),id){Enabled = true},
-                new Node((x + width / 2, y + height + 1),id){Enabled = true},
-                new Node((x - 1,         y + height / 2),id){Enabled = true}
-            }); 
 
             for (int X = 0; X <= width; X++)
             {
@@ -324,11 +326,16 @@ namespace ROQWE
             }
         }
     }
-    class Room
+    /// <summary>
+    /// data type for storing information about room for ease of use
+    /// </summary>
+    class Room : IComparable<Room>
     {
         public Node[] roomNodes = new Node[] { };
-        public Vector start;
-        public Vector end;
+        public IntVector start;
+        public IntVector end;
+        public bool enabled;
+        public int Id;
 
         public Room(Vector startCorner, Vector roomSize, int id)
         {
@@ -345,6 +352,12 @@ namespace ROQWE
             };
             start   = startCorner;
             end     = startCorner + roomSize;
+            Id = id;
+            enabled = true;
+        }
+        public int CompareTo(Room other)
+        {
+            return this.start.CompareTo(other.start);
         }
     }
 }

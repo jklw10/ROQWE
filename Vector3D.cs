@@ -12,7 +12,7 @@ namespace ROQWE
     
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
-    class IntVector3D: IComparable<IntVector3D>
+    struct IntVector3D: IComparable<IntVector3D>
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     {
@@ -46,7 +46,7 @@ namespace ROQWE
         public Vector Angle
         {
             get { return IntVectorToRadians(this); }
-            set { XY.Angle = value.X; }
+            set {  }
         }
 
         public override string ToString()
@@ -78,11 +78,15 @@ namespace ROQWE
         public int CompareTo(IntVector3D other)
         {
             // If other is not a valid object reference, this instance is greater.
-            if (other is null) return 1;
+            if (other is object) 
+            {
+                // The magnitude comparison depends on the comparison of 
+                // the underlying Double values. 
+                return Magnitude.CompareTo(other.Magnitude);
+            }
+            else
+            return 1;
     
-            // The temperature comparison depends on the comparison of 
-            // the underlying Double values. 
-            return Magnitude.CompareTo(other.Magnitude);
         }
         public static bool operator >(IntVector3D operand1, IntVector3D operand2)
         {

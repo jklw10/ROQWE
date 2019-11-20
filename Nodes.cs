@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ROQWE
 {
-    class Node : IComparable<Node>
+    struct Node : IComparable<Node>
     {
         public Vector Coordinates { get; set; }
         public int Id { get; set; }
@@ -22,11 +22,6 @@ namespace ROQWE
             Id = id;
             Enabled = true;
         }
-        public Node(Vector coordinates)
-        {
-            Coordinates = coordinates;
-            Enabled = true;
-        }
         public Node(int x ,int y , int id)
         {
             Coordinates = new Vector(x,y);
@@ -35,12 +30,44 @@ namespace ROQWE
         }
         public int CompareTo(Node other)
         {
-            if(other == null) { return 1; }
-            else
-            {
                 return Coordinates.CompareTo(other.Coordinates);
-            }
-
+        }
+        /// <summary>
+        /// not recommended
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            return this == (Node)obj;
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+        public static bool operator ==(Node a, Node b)
+        {
+            return (a.CompareTo(b) == 0);
+        }
+        public static bool operator !=(Node a, Node b)
+        {
+            return !(a.CompareTo(b) == 0);
+        }
+        public static bool operator <=(Node a, Node b)
+        {
+            return (a.CompareTo(b) <= 0);
+        }
+        public static bool operator >=(Node a, Node b)
+        {
+            return (a.CompareTo(b) >= 0);
+        }
+        public static bool operator <(Node a, Node b)
+        {
+            return (a.CompareTo(b) < 0);
+        }
+        public static bool operator >(Node a, Node b)
+        {
+            return (a.CompareTo(b) > 0);
         }
     }
 }

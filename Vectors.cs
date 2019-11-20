@@ -13,7 +13,7 @@ namespace ROQWE
 
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
-    class Vector : IComparable<Vector>
+    struct Vector : IComparable<Vector>
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
     {
@@ -161,7 +161,7 @@ namespace ROQWE
         {
             // If other is not a valid object reference, this instance is greater.
             
-            if (!(other is null))
+            if ((other is object))
             {
                 return Magnitude.CompareTo(other.Magnitude);
             }
@@ -388,7 +388,7 @@ namespace ROQWE
     //
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
-    class IntVector
+    struct IntVector
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     {
@@ -429,11 +429,17 @@ namespace ROQWE
         public int CompareTo(IntVector other)
         {
             // If other is not a valid object reference, this instance is greater.
-            if (other is null) return 1;
+            if (other is object) 
+            {
+                return Magnitude.CompareTo(other.Magnitude);
+            }
+            else
+            {
+                return 1;
+            }
 
             // The temperature comparison depends on the comparison of 
             // the underlying Double values. 
-            return Magnitude.CompareTo(other.Magnitude);
         }
         public static bool operator >(IntVector operand1, IntVector operand2)
         {

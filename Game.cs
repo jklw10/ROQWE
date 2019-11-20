@@ -67,7 +67,7 @@ namespace ROQWE
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            GL.ClearColor(Color.Black);
+            GL.ClearColor(Color.Green);
 
             Console.WriteLine(new Chunk((9,3)).ToString());
             
@@ -176,7 +176,7 @@ namespace ROQWE
             {//draws each item in inventory on screen 
                 for (int y = 0; y < Player.inventory.size.Y; y++)
                 {
-                   Player.inventory[x, y].Image.DrawInWorld(new Vector3(0, 1, 0), new Vector3(0,0,1));//,new Vector4(0,window.X,0,window.Y));
+                   //Player.inventory[x, y].Image.DrawInWorld(new Vector3(0, 1, 0), new Vector3(0,0,1));//,new Vector4(0,window.X,0,window.Y));
                 }
             }
             //foreach (Entity debug in DQD)

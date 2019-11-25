@@ -35,6 +35,7 @@ namespace ROQWE
             Pic = pic;
             BaseStats = stats;
             Health = stats.health;
+
         }
         public override string ToString()
         {

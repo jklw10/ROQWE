@@ -159,17 +159,7 @@ namespace ROQWE
 
         public int CompareTo(Vector other)
         {
-            // If other is not a valid object reference, this instance is greater.
-            
-            if ((other is object))
-            {
-                return Magnitude.CompareTo(other.Magnitude);
-            }
-            else
-            {
-                return 1;
-            }
-            
+            return Magnitude.CompareTo(other.Magnitude);
         }
         public static bool operator >(Vector operand1, Vector operand2)
         {
@@ -405,7 +395,7 @@ namespace ROQWE
         public double Angle
         {
             get { return IntVectorToRadians(this); }
-            set { THIS = Vector.RadiansToVector(value, Magnitude); }
+            set { }
         }
         /// <summary>
         /// (X, Y)
@@ -428,18 +418,7 @@ namespace ROQWE
         }
         public int CompareTo(IntVector other)
         {
-            // If other is not a valid object reference, this instance is greater.
-            if (other is object) 
-            {
-                return Magnitude.CompareTo(other.Magnitude);
-            }
-            else
-            {
-                return 1;
-            }
-
-            // The temperature comparison depends on the comparison of 
-            // the underlying Double values. 
+            return Magnitude.CompareTo(other.Magnitude); 
         }
         public static bool operator >(IntVector operand1, IntVector operand2)
         {

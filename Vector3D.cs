@@ -77,16 +77,9 @@ namespace ROQWE
         }
         public int CompareTo(IntVector3D other)
         {
-            // If other is not a valid object reference, this instance is greater.
-            if (other is object) 
-            {
-                // The magnitude comparison depends on the comparison of 
-                // the underlying Double values. 
-                return Magnitude.CompareTo(other.Magnitude);
-            }
-            else
-            return 1;
-    
+           // The magnitude comparison depends on the comparison of 
+           // the underlying Double values. 
+           return Magnitude.CompareTo(other.Magnitude);
         }
         public static bool operator >(IntVector3D operand1, IntVector3D operand2)
         {

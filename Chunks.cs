@@ -128,13 +128,13 @@ namespace ROQWE
             Chunk Read = ModifiedChunks.Find(X => X.ChunkCoordinate == CC);
             if (Read == null)
             {
-                return new Entity(CR.X, CR.Y, z, ' ', Guid.NewGuid(), null, new Stats(1));
+                return new Entity(CR.X, CR.Y, z, ' ', Guid.NewGuid(), new Cube(), new Stats(1));
             }
             else
             {
                 if(Read.Read((CR.X, CR.Y, z)) == null)
                 {
-                    return new Entity(CR.X, CR.Y,z, ' ', Guid.NewGuid(), null, new Stats(1));
+                    return new Entity(CR.X, CR.Y,z, ' ', Guid.NewGuid(), new Cube(), new Stats(1));
                 }
                 Entity character = Read.Read((CR.X, CR.Y, z));
                 return character;

@@ -15,16 +15,7 @@ namespace ROQWE
         {
             get 
             {
-                if (itemArray[x, y] is null)
-                {//if the item at point in array is null get an empty item
-                    Item returned = new Item();
-                    returned.Image.MoveQuad(x,y);
-                    return returned;
-                }
-                else
-                {
-                    return itemArray[x, y];
-                }
+                return itemArray[x, y];
             }
             set 
             {
@@ -52,7 +43,7 @@ namespace ROQWE
             {
                 for (int y = 0; y < size.Y; y++)
                 {
-                    if (itemArray[x,y] is null)
+                    if (itemArray[x,y].itemType == (int)Item.ItemIDs.Empty)
                     {
                         return new Node(x, y,0) { Enabled = true };
                     }
@@ -93,13 +84,7 @@ namespace ROQWE
         {
             get
             {
-                if (image is null) 
-                {
-                    return new Cube((IntVector3D)(0, 0, 0), 1, 1, 1, 0);
-                } else 
-                { 
-                    return image; 
-                }
+                return image; 
 
             }
             set 
@@ -131,17 +116,18 @@ namespace ROQWE
 
             image = pic;
             statuses = stats;
+            equipped = false;
         }
         /// <summary>
         /// creates a new empty item
         /// </summary>
-        public Item()
+        /*public Item()
         {
             itemType = (int)ItemIDs.Empty;
 
             image = new Cube((IntVector3D)(0, 0, 0), 1, 1, 1, 0);
             statuses = new Stats(0, 0, 0);
-        }
+        }//*/
         public enum ItemIDs
         {
             Empty,

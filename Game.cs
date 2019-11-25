@@ -21,8 +21,6 @@ namespace ROQWE
 
         [DllImport("kernel32.dll")]
         static extern void OutputDebugString(string lpOutputString);
-
-        int timer;
         static public GameWindow window;
         public static int Where = 0;
         public static List<Map> Level = new List<Map>(50);
@@ -67,7 +65,7 @@ namespace ROQWE
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            GL.ClearColor(Color.Green);
+            GL.ClearColor(Color.Black);
 
             Console.WriteLine(new Chunk((9,3)).ToString());
             
@@ -78,7 +76,7 @@ namespace ROQWE
             Level.Add(new Map());
 
             Generator map = new Generator(Level[Where]);
-            map.Generate();
+              map.Generate();
 
             DrawMap(Where);
             try
@@ -102,40 +100,12 @@ namespace ROQWE
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
-            //PlayerPic.RotateQuad(0.1);
-            //ConvertVTOD();
         }
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
 
             base.OnMouseMove(e);
-            
-            if (debug)
-            {
-                timer++;
-                if (timer >= 10)
-                {
-                    
-                    Console.Clear();
-                    Console.WriteLine(
-                    e.X + ", " + e.Y
-                    + "\n" +
-                    (e.X - Width / 2) + ", " + (Height / 2 - e.Y)
-                    + "\n" +
-                    Player.X + ", " + Player.Y
-                    + "\n" +
-                    "c#:-10%16= "+ -10%16+"  \n"+
-                    "real life:-10%16= " + (new Vector(-10) % new Vector(16)).X + "  \n" +
-                    new Vector((e.X - Width / 2),(Height / 2 - e.Y)).Angle
-                    
-                    + "\n" +
-                    "tile: " + Level[Where].FindStr((IntVector)Vector.RotateVector(new Vector(e.X - Width / 2, Height / 2 - e.Y), -CameraAngle.Z) /Scale + Player.Position.XY)
-                    
-                    );
-                    timer = 0;
-                }
-            }
             if (e.Mouse.RightButton == ButtonState.Pressed)
             {
                 CameraAngle -= new Vector3(0,0, e.XDelta / 75f);
@@ -176,7 +146,10 @@ namespace ROQWE
             {//draws each item in inventory on screen 
                 for (int y = 0; y < Player.inventory.size.Y; y++)
                 {
-                   //Player.inventory[x, y].Image.DrawInWorld(new Vector3(0, 1, 0), new Vector3(0,0,1));//,new Vector4(0,window.X,0,window.Y));
+                    if(Player.inventory[x, y] is object)
+                    {
+                        Player.inventory[x, y].Image.DrawOnScreen(CameraAngle, Player.Position, new Vector4(window.X - 600, window.X, window.Y - 600, window.Y));
+                    }
                 }
             }
             //foreach (Entity debug in DQD)
@@ -306,8 +279,8 @@ namespace ROQWE
                 Entity shot = Raycasting.Cast(Player.Position.XY, Vector.RadiansToVector(Player.Pic.Angle, 1));
                 Console.WriteLine("shot:" + shot.Type + "  X:" + shot.X + "  Y:" + shot.Y);
                 Entity lit = InView.Find(x => x.Position == shot.Position);
-                if (!(lit is null)) { lit.Pic.highlight -= 10; }
-
+                if (!(lit is null)) { lit.Pic.Highlight(10); }
+                
 
                 if (shot.Type == Types.snakeType)
                 {
@@ -463,7 +436,7 @@ namespace ROQWE
                     Node emptyslot = attacker.inventory.FindEmptySlot();
                     if (emptyslot.Enabled)
                     {
-                        Item item = new Item();
+                        Item item = new Item((int)Item.ItemIDs.Helmet, new Cube(), new Stats());
                         item.RollStats();
                         attacker.inventory.SetItem(emptyslot.Coordinates,item);
                     }

@@ -20,7 +20,7 @@ namespace ROQWE
         public void Generate()
         {
             //generates rooms
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 10; i++)
             {
                 IntVector size = (10, 10);
                 Random rng = new Random();
@@ -175,19 +175,16 @@ namespace ROQWE
             room1.roomNodes[Array.IndexOf(room1.roomNodes, set[0])].Enabled = false;//disables node's ability to be found in FindClosest()
             room2.roomNodes[Array.IndexOf(room2.roomNodes, set[1])].Enabled = false;
 
-            //set[0].Enabled = false;
-            //set[1].Enabled = false;
-
             IntVector start = set[0].Coordinates;
             IntVector end =   set[1].Coordinates;
             DrawWalls(start, end);
             DrawFloors(start, end);
             //Console.WriteLine("{0} connects to {1}", set);
-            for (int x = 0; x < 4; x++) //1-4 are indexes for room Corner nodes (so this is if in corner do:)
+            for (int x = 0; x <= (int)Room.Nodes.CornerIndexes; x++) //0-3 are indexes for room Corner nodes (so this is if in corner do:)
             {
                 if (set[0] == room1.roomNodes[x])
                 {
-                    Node[] set2 = FindClosest(room1.roomNodes, new Node[] { set[0] }, false);
+                    Node[] set2 = FindClosest(room1.roomNodes, new Node[] { set[0] }, true);
                     room1.roomNodes[Array.IndexOf(room1.roomNodes, set2[1])].Enabled = false; 
 
                     start = set2[1].Coordinates;
@@ -195,12 +192,10 @@ namespace ROQWE
 
                     DrawWalls(start, end);
                     DrawFloors(start, end);
-                    //Console.WriteLine("{0} connects to {1}", set2);
-                    break;
                 }
                 if (set[1] == room2.roomNodes[x])
                 {
-                    Node[] set2 = FindClosest(room2.roomNodes, new Node[] { set[1] }, false);
+                    Node[] set2 = FindClosest(room2.roomNodes, new Node[] { set[1] }, true);
                     room2.roomNodes[Array.IndexOf(room2.roomNodes, set2[1])].Enabled = false;
 
                     start = set2[1].Coordinates;
@@ -208,10 +203,10 @@ namespace ROQWE
 
                     DrawWalls(start, end);
                     DrawFloors(start, end);
-                    //Console.WriteLine("{0} connects to {1}", set2);
-                    break;
                 }
             }
+            room1.roomNodes[Array.IndexOf(room1.roomNodes, set[0])].Enabled = true;
+            room2.roomNodes[Array.IndexOf(room2.roomNodes, set[1])].Enabled = true;
         }
         /// <summary>
         /// makes a 3 wide line of cubes between 2 points on the map
@@ -336,19 +331,35 @@ namespace ROQWE
         public IntVector end;
         public bool enabled;
         public int Id;
+        public enum Nodes
+        {
+            BottomLeftCorner,
+            BottomRightCorner,
+            TopRightCorner,
+            TopLeftCorner,
+
+            BottomCenter,
+            TopCenter,
+            RightCenter,
+            LeftCenter,
+            CornerIndexes = 3,
+
+        };
 
         public Room(Vector startCorner, Vector roomSize, int id)
         {
             roomNodes = new Node[]
             {
-                new Node((startCorner.X - 1,                startCorner.Y - 1               ),id){Enabled = true },
+                //*
+                new Node((startCorner.X - 1,                startCorner.Y - 1               ),id){Enabled = true},
                 new Node((startCorner.X + roomSize.X + 1,   startCorner.Y - 1               ),id){Enabled = true},
                 new Node((startCorner.X + roomSize.X + 1,   startCorner.Y + roomSize.Y + 1  ),id){Enabled = true},
                 new Node((startCorner.X - 1,                startCorner.Y + roomSize.Y + 1  ),id){Enabled = true},
+
                 new Node((startCorner.X + roomSize.X / 2,   startCorner.Y - 1               ),id){Enabled = true},
-                new Node((startCorner.X + roomSize.X + 1,   startCorner.Y + roomSize.Y / 2  ),id){Enabled = true},
                 new Node((startCorner.X + roomSize.X / 2,   startCorner.Y + roomSize.Y + 1  ),id){Enabled = true},
-                new Node((startCorner.X - 1,                startCorner.Y + roomSize.Y / 2  ),id){Enabled = true}
+                new Node((startCorner.X - 1,                startCorner.Y + roomSize.Y / 2  ),id){Enabled = true},
+                new Node((startCorner.X + roomSize.X + 1,   startCorner.Y + roomSize.Y / 2  ),id){Enabled = true}
             };
             start   = startCorner;
             end     = startCorner + roomSize;

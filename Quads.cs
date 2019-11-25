@@ -26,7 +26,7 @@ namespace ROQWE
         public double Angle { get; set; }
         private float Width;
         private float Length;
-        private float Height =1;
+        private float Height;
 
         private static int VSID;
         private static int QID;
@@ -39,10 +39,11 @@ namespace ROQWE
         public static Vector Offset { get; set; }
 
         public static Vector ScreenSize = new Vector(Game.window.Width, Game.window.Height);
-        
-        private Color Color = Color.Black;
-        private int   Texture = Loader.LoadColor(Color.Blue);
-        public float  highlight = 0;
+
+        private Color Color;
+        private int Texture;
+        private static int _default = Loader.LoadColor(Color.Black);
+        public float highlight;
 
         public Cube(float x, float y, float z, float width, float length, float height, Color color)
         {
@@ -52,8 +53,23 @@ namespace ROQWE
             Width = width;
             Length = length;
             Height = height;
-            Texture = Loader.LoadColor(color);
+            Texture = _default;
             Color = color;
+            Angle = 0;
+            highlight = 0;
+        }
+        public Cube()
+        {
+            X = 0;
+            Y = 0;
+            Z = 0;
+            Width = 0;
+            Length = 0;
+            Height = 0;
+            Texture = _default;
+            Color = Color.Black;
+            Angle = 0;
+            highlight = 0;
         }
         public Cube(Vector3 position, float width, float length, float height, Color color)
         {
@@ -63,8 +79,10 @@ namespace ROQWE
             Width = width;
             Length = length;
             Height = height;
-            Texture = Loader.LoadColor(color);
+            Texture = _default;
             Color = color;
+            Angle = 0;
+            highlight = 0;
         }
         public Cube(Vector3 position, float width, float length, float height, int texture)
         {
@@ -75,6 +93,9 @@ namespace ROQWE
             Length = length;
             Height = height;
             Texture = texture;
+            Color = Color.Black;
+            Angle = 0;
+            highlight = 0;
         }
         
         public Cube(float x, float y, float z, float width, float length, float height, int texture)
@@ -86,6 +107,9 @@ namespace ROQWE
             Length = length;
             Height = height;
             Texture = texture;
+            Color = Color.Black;
+            Angle = 0;
+            highlight = 0;
         }
         public override string ToString()
         {
@@ -174,6 +198,14 @@ namespace ROQWE
         {
             return (Vector)Position.Xy + Offset + ScreenSize / 2;
         }
+        /// <summary>
+        /// highlights the selected cube by width
+        /// </summary>
+        public void Highlight(float width)
+        {
+            highlight = width;
+        }
+
         /// <summary>
         /// draws cubes on screen without perspective.
         /// sides vector: x=left,y=right,z=bottom,w=top;
